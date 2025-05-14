@@ -4,7 +4,7 @@
 
 ---
 
-## ⚙️ Tech Stack (Free & Open-Source)
+## ⚙️ Tech Stack 
 
 | Layer             | Tools                                     |
 |------------------|-------------------------------------------|
