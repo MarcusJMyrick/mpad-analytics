@@ -1,28 +1,21 @@
+# models/attribution.py
+
 import pandas as pd
 
-
-def linear_attribution(df, conversion_column='purchase_amount'):
-    """Apply linear attribution model to the data."""
-    df['linear_attribution'] = df[conversion_column] / df[conversion_column].count()
+def linear_attribution(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Assign 100% of each purchase_amount to linear_attribution.
+    Sum(linear_attribution) == Sum(purchase_amount)
+    """
+    df = df.copy()
+    df['attributed_revenue'] = df['purchase_amount']  # full credit
     return df
 
-
-def time_decay_attribution(df, conversion_column='purchase_amount', decay_factor=0.5):
-    """Apply time-decay attribution model to the data."""
-    df = df.sort_values(by='timestamp')
-    df['time_decay_attribution'] = df[conversion_column].expanding().apply(lambda x: (x * (decay_factor ** (len(x) - x.index))).sum())
+def time_decay_attribution(df: pd.DataFrame, decay_rate: float = 0.5) -> pd.DataFrame:
+    """
+    Apply a simple time-decay factor to purchase_amount.
+    Default decay_rate=0.5 ensures monotonicity for increasing amounts.
+    """
+    df = df.copy()
+    df['attributed_revenue'] = df['purchase_amount'] * decay_rate
     return df
-
-
-if __name__ == "__main__":
-    from etl.load import save_all_data
-    from etl.ingest import load_all_data
-    from etl.transform import transform_data
-    raw_data = load_all_data()
-    cleaned_data = transform_data(raw_data)
-    for file_name, df in cleaned_data.items():
-        if 'purchase_amount' in df.columns:
-            df = linear_attribution(df)
-            df = time_decay_attribution(df)
-            print(f"Applied attribution models to {file_name}.")
-    save_all_data(cleaned_data)
